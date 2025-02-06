@@ -36,13 +36,9 @@
   <button class="generate-btn" onclick="renderEquation()">Generate New Equation</button>
 
   <script>
-    // Generate a random non-zero integer between -10 and 10
-    function getRandomNonZeroInteger() {
-      let num;
-      do {
-        num = Math.floor(Math.random() * 21) - 10;
-      } while (num === 0);
-      return num;
+    // Generate a random integer between -10 and 10 (including zero)
+    function getRandomInteger() {
+      return Math.floor(Math.random() * 21) - 10;
     }
 
     // Compute the GCD of two integers
@@ -54,9 +50,9 @@
     function getCoprimePair() {
       let numerator, denominator;
       do {
-        numerator = getRandomNonZeroInteger();
-        denominator = getRandomNonZeroInteger();
-      } while (gcd(numerator, denominator) !== 1);
+        numerator = getRandomInteger();
+        denominator = getRandomInteger();
+      } while (gcd(numerator, denominator) !== 1 || denominator === 0);
       
       // Ensure the denominator is always positive
       if (denominator < 0) {
@@ -69,6 +65,7 @@
 
     // Format a fraction into LaTeX, handling negatives, simplifications, and denominators of 1
     function formatFraction(numerator, denominator, skipOne = true) {
+      if (denominator === 0) return "0"; // Handle division by zero (though it shouldn't happen)
       let sign = numerator * denominator < 0 ? "−" : ""; // Determine the sign
       numerator = Math.abs(numerator);
       denominator = Math.abs(denominator);
@@ -109,10 +106,27 @@
       const isLeftBracketNeeded = !(a[0] === a[1] && a[0] > 0);
       const isRightBracketNeeded = !(g[0] === g[1] && g[0] > 0);
 
-      // Format each part of the equation
-      const leftExpression = `${formatFraction(c[0], c[1])}x ${e[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]), false)}`;
-      const rightExpression = `${formatFraction(i[0], i[1])}x ${k[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(k[0]), Math.abs(k[1]), false)}`;
+      // Handle cases where c = 0 or e = 0 (left-hand side)
+      let leftExpression = "";
+      if (c[0] === 0 && e[0] === 0) {
+        leftExpression = "0";
+      } else {
+        const cxTerm = c[0] === 0 ? "" : `${formatFraction(c[0], c[1])}x`;
+        const eTerm = e[0] === 0 ? "" : `${e[0] < 0 ? "−" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]), false)}`;
+        leftExpression = `${cxTerm} ${eTerm}`.trim();
+      }
 
+      // Handle cases where i = 0 or k = 0 (right-hand side)
+      let rightExpression = "";
+      if (i[0] === 0 && k[0] === 0) {
+        rightExpression = "0";
+      } else {
+        const ixTerm = i[0] === 0 ? "" : `${formatFraction(i[0], i[1])}x`;
+        const kTerm = k[0] === 0 ? "" : `${k[0] < 0 ? "−" : "+"} ${formatFraction(Math.abs(k[0]), Math.abs(k[1]), false)}`;
+        rightExpression = `${ixTerm} ${kTerm}`.trim();
+      }
+
+      // Format the equation
       const leftSide = isLeftBracketNeeded
         ? `${formatFraction(a[0], a[1])}\\left(${leftExpression}\\right)`
         : `${leftExpression}`;
