@@ -92,7 +92,6 @@
     }
 
 function generateEquation() {
-  // Generate initial fractions
   const [a, b] = getCoprimePair();
   const [c, d] = [getRandomInteger(), getRandomInteger(false)];
   const [e, f] = [getRandomInteger(), getRandomInteger(false)];
@@ -100,7 +99,6 @@ function generateEquation() {
   let [i, j] = [getRandomInteger(), getRandomInteger(false)];
   const [k, l] = [getRandomInteger(), getRandomInteger(false)];
 
-  // Ensure c/d ≠ i/j
   while (c * j === i * d) {
     [i, j] = [getRandomInteger(), getRandomInteger(false)];
   }
@@ -110,19 +108,18 @@ function generateEquation() {
   if (c === 0 && e === 0) {
     leftExpression = "0";
   } else if (c === 0) {
-    // Only fraction term e/f
     const [numE, denE] = multiplyFractions([a, b], [e, f]);
     leftExpression = formatFraction(numE, denE);
   } else if (e === 0) {
-    // Only x term c/d
     const [numC, denC] = multiplyFractions([a, b], [c, d]);
     leftExpression = `${formatFraction(numC, denC)}x`;
   } else {
-    const cTerm = `${formatFraction(c, d)}x`;
-    const eTerm = e < 0 ? 
-        (cTerm.startsWith('-') ? `+ ${formatFraction(Math.abs(e), f, false)}` : `- ${formatFraction(Math.abs(e), f, false)}`) : 
-        (cTerm.startsWith('-') ? `- ${formatFraction(e, f, false)}` : `+ ${formatFraction(e, f, false)}`);
-    leftExpression = `${formatFraction(a, b)}\\left(${cTerm} ${eTerm}\\right)`;
+    const [numC, denC] = [c, d];
+    const isEFNegative = (e * f) < 0;
+    const fractionEF = formatFraction(Math.abs(e), Math.abs(f), false);
+    const sign = isEFNegative ? "-" : "+";
+    const cTerm = `${formatFraction(numC, denC)}x`;
+    leftExpression = `${formatFraction(a, b)}\\left(${cTerm} ${sign} ${fractionEF}\\right)`;
   }
 
   // Process right side
@@ -130,19 +127,18 @@ function generateEquation() {
   if (i === 0 && k === 0) {
     rightExpression = "0";
   } else if (i === 0) {
-    // Only fraction term k/l
     const [numK, denK] = multiplyFractions([g, h], [k, l]);
     rightExpression = formatFraction(numK, denK);
   } else if (k === 0) {
-    // Only x term i/j
     const [numI, denI] = multiplyFractions([g, h], [i, j]);
     rightExpression = `${formatFraction(numI, denI)}x`;
   } else {
-    const iTerm = `${formatFraction(i, j)}x`;
-    const kTerm = k < 0 ? 
-        (iTerm.startsWith('-') ? `+ ${formatFraction(Math.abs(k), l, false)}` : `- ${formatFraction(Math.abs(k), l, false)}`) : 
-        (iTerm.startsWith('-') ? `- ${formatFraction(k, l, false)}` : `+ ${formatFraction(k, l, false)}`);
-    rightExpression = `${formatFraction(g, h)}\\left(${iTerm} ${kTerm}\\right)`;
+    const [numI, denI] = [i, j];
+    const isKLNegative = (k * l) < 0;
+    const fractionKL = formatFraction(Math.abs(k), Math.abs(l), false);
+    const sign = isKLNegative ? "-" : "+";
+    const iTerm = `${formatFraction(numI, denI)}x`;
+    rightExpression = `${formatFraction(g, h)}\\left(${iTerm} ${sign} ${fractionKL}\\right)`;
   }
 
   return `${leftExpression} = ${rightExpression}`;
