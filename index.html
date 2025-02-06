@@ -105,9 +105,21 @@
       const k = getCoprimePair();
       const l = getCoprimePair();
 
+      // Check if the fraction before the bracket equals 1 (but not -1)
+      const isLeftBracketNeeded = !(a[0] === a[1] && a[0] > 0);
+      const isRightBracketNeeded = !(g[0] === g[1] && g[0] > 0);
+
       // Format each part of the equation
-      const leftSide = `${formatFraction(a[0], a[1])}\\left(${formatFraction(c[0], c[1])}x ${e[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]), false)}\\right)`;
-      const rightSide = `${formatFraction(g[0], g[1])}\\left(${formatFraction(i[0], i[1])}x ${k[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(k[0]), Math.abs(k[1]), false)}\\right)`;
+      const leftExpression = `${formatFraction(c[0], c[1])}x ${e[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]), false)}`;
+      const rightExpression = `${formatFraction(i[0], i[1])}x ${k[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(k[0]), Math.abs(k[1]), false)}`;
+
+      const leftSide = isLeftBracketNeeded
+        ? `${formatFraction(a[0], a[1])}\\left(${leftExpression}\\right)`
+        : `${leftExpression}`;
+
+      const rightSide = isRightBracketNeeded
+        ? `${formatFraction(g[0], g[1])}\\left(${rightExpression}\\right)`
+        : `${rightExpression}`;
 
       return `${leftSide} = ${rightSide}`;
     }
