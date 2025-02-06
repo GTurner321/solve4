@@ -67,15 +67,19 @@
       return [numerator, denominator];
     }
 
-    // Format a fraction into LaTeX
-    function formatFraction(numerator, denominator) {
-      if (denominator === 1) {
-        return `${numerator}`; // If denominator is 1, return just the numerator
+    // Format a fraction into LaTeX, handling negatives and special cases
+    function formatFraction(numerator, denominator, skipOne = true) {
+      let sign = numerator * denominator < 0 ? "−" : ""; // Determine the sign
+      numerator = Math.abs(numerator);
+      denominator = Math.abs(denominator);
+
+      // Handle cases where the fraction simplifies to 1 or -1
+      if (numerator === denominator) {
+        return skipOne ? `${sign}` : `${sign}1`; // Print '-' if it's -1, nothing if it's 1
       }
-      if (numerator === 0) {
-        return `0`; // If numerator is 0, return 0
-      }
-      return `\\frac{${numerator}}{${denominator}}`; // Otherwise, return the fraction
+
+      // Default fraction formatting
+      return `${sign}\\frac{${numerator}}{${denominator}}`;
     }
 
     // Generate the random equation
@@ -89,15 +93,12 @@
 
       // Format each part of the equation
       const fractionA = formatFraction(a[0], a[1]);
-      const fractionB = formatFraction(b[0], b[1]);
       const fractionC = formatFraction(c[0], c[1]);
-      const fractionD = formatFraction(d[0], d[1]);
-      const fractionE = formatFraction(e[0], e[1]);
-      const fractionF = formatFraction(f[0], f[1]);
+      const fractionE = formatFraction(e[0], e[1], false);
 
       // Construct the equation
-      const leftSide = `${fractionA}\\left(${fractionC}x ${e[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]))}\\right)`;
-      const rightSide = `${fractionA}\\left(${fractionC}x ${e[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]))}\\right)`;
+      const leftSide = `${fractionA}\\left(${fractionC}x ${e[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]), false)}\\right)`;
+      const rightSide = `${fractionA}\\left(${fractionC}x ${e[0] < 0 ? "-" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]), false)}\\right)`;
 
       return `${leftSide} = ${rightSide}`;
     }
@@ -115,4 +116,3 @@
   </script>
 </body>
 </html>
-
