@@ -36,112 +36,123 @@
   <button class="generate-btn" onclick="renderEquation()">Generate New Equation</button>
 
   <script>
-    // Generate a random integer between -10 and 10 (inclusive for c, e, i, k)
-    function getRandomInteger(includeZero = true) {
-      let value;
-      do {
-        value = Math.floor(Math.random() * 21) - 10;
-      } while (!includeZero && value === 0); // Exclude zero if required
-      return value;
+    function getRandomInteger(includeZero = false) {
+      const num = Math.floor(Math.random() * 21) - 10; // Range -10 to 10
+      return includeZero ? num : num === 0 ? getRandomInteger(includeZero) : num; // Retry if zero is excluded
     }
 
-    // Compute the GCD of two integers
     function gcd(a, b) {
       return b === 0 ? Math.abs(a) : gcd(b, a % b);
     }
 
-    // Generate a random coprime numerator and denominator
     function getCoprimePair() {
       let numerator, denominator;
       do {
-        numerator = getRandomInteger(false); // Exclude zero for numerator
-        denominator = getRandomInteger(false); // Exclude zero for denominator
-      } while (gcd(numerator, denominator) !== 1);
-
-      // Ensure the denominator is always positive
+        numerator = getRandomInteger();
+        denominator = getRandomInteger();
+      } while (gcd(numerator, denominator) !== 1 || denominator === 0);
       if (denominator < 0) {
         numerator = -numerator;
         denominator = -denominator;
       }
-
       return [numerator, denominator];
     }
 
-    // Format a fraction into LaTeX, handling negatives, simplifications, and denominators of 1
     function formatFraction(numerator, denominator, skipOne = true) {
-      if (denominator === 0) return "0"; // Handle division by zero (though it shouldn't happen)
-      let sign = numerator * denominator < 0 ? "−" : ""; // Determine the sign
+      if (denominator === 0) return "0";
+      const sign = numerator * denominator < 0 ? "−" : "";
       numerator = Math.abs(numerator);
       denominator = Math.abs(denominator);
-
-      // Handle cases where the fraction simplifies to 1 or -1
-      if (numerator === denominator) {
-        return skipOne ? `${sign}` : `${sign}1`; // Print '-' if it's -1, nothing if it's 1
-      }
-
-      // Simplify fractions with denominator = 1
-      if (denominator === 1) {
-        return `${sign}${numerator}`;
-      }
-
-      // Default fraction formatting
+      if (numerator === denominator) return skipOne ? `${sign}` : `${sign}1`;
+      if (denominator === 1) return `${sign}${numerator}`;
       return `${sign}\\frac{${numerator}}{${denominator}}`;
     }
 
-    // Generate the random equation
+    function evaluateFraction(numerator1, denominator1, numerator2, denominator2) {
+      const num = numerator1 * numerator2;
+      const den = denominator1 * denominator2;
+      const gcdValue = gcd(num, den);
+      return [num / gcdValue, den / gcdValue];
+    }
+
+    function ensureDifferentFraction(fraction, denominator) {
+      let newNumerator, newDenominator;
+      do {
+        [newNumerator, newDenominator] = getCoprimePair();
+      } while (newNumerator / newDenominator === fraction[0] / fraction[1]);
+      return [newNumerator, newDenominator];
+    }
+
     function generateEquation() {
-      // Generate random fractions for left-hand side
       const a = getCoprimePair();
       const b = getCoprimePair();
-      const c = [getRandomInteger(), getRandomInteger(false)]; // Include zero for numerator only
+      const c = getCoprimePair();
       const d = getCoprimePair();
-      const e = [getRandomInteger(), getRandomInteger(false)]; // Include zero for numerator only
+      const e = getCoprimePair();
       const f = getCoprimePair();
 
-      // Generate random fractions for right-hand side
       const g = getCoprimePair();
       const h = getCoprimePair();
-      const i = [getRandomInteger(), getRandomInteger(false)]; // Include zero for numerator only
+      let i = getCoprimePair();
       const j = getCoprimePair();
-      const k = [getRandomInteger(), getRandomInteger(false)]; // Include zero for numerator only
+      const k = getCoprimePair();
       const l = getCoprimePair();
 
-      // Handle cases where c = 0 or e = 0 (left-hand side)
-      let leftExpression = "";
+      // Ensure c/d ≠ i/j
+      i = ensureDifferentFraction(c, d);
+
+      // Handle left-hand side simplifications
+      let leftTerm = "";
       if (c[0] === 0 && e[0] === 0) {
-        leftExpression = "0";
+        leftTerm = "0";
+      } else if (c[0] === 0) {
+        leftTerm = `${e[0] < 0 ? "" : "+"}${formatFraction(e[0], e[1], false)}`;
+      } else if (e[0] === 0) {
+        leftTerm = `${formatFraction(c[0], c[1])}x`;
       } else {
-        const cxTerm = c[0] === 0 ? "" : `${formatFraction(c[0], c[1])}x`;
-        const eTerm = e[0] === 0 ? "" : `${e[0] < 0 ? "−" : "+"} ${formatFraction(Math.abs(e[0]), Math.abs(e[1]), false)}`;
-        leftExpression = `${cxTerm} ${eTerm}`.trim();
+        leftTerm = `${formatFraction(c[0], c[1])}x ${e[0] < 0 ? "" : "+"} ${formatFraction(e[0], e[1], false)}`;
       }
 
-      // Handle cases where i = 0 or k = 0 (right-hand side)
-      let rightExpression = "";
+      if (a[0] !== a[1] && (c[0] === 0 || e[0] === 0)) {
+        const [num, den] = evaluateFraction(a[0], a[1], c[0] || e[0], c[0] ? c[1] : e[1]);
+        leftTerm = formatFraction(num, den);
+      } else if (a[0] === a[1]) {
+        leftTerm = `\\left(${leftTerm}\\right)`;
+      } else {
+        leftTerm = `${formatFraction(a[0], a[1])}\\left(${leftTerm}\\right)`;
+      }
+
+      // Handle right-hand side simplifications
+      let rightTerm = "";
       if (i[0] === 0 && k[0] === 0) {
-        rightExpression = "0";
+        rightTerm = "0";
+      } else if (i[0] === 0) {
+        rightTerm = `${k[0] < 0 ? "" : "+"}${formatFraction(k[0], k[1], false)}`;
+      } else if (k[0] === 0) {
+        rightTerm = `${formatFraction(i[0], i[1])}x`;
       } else {
-        const ixTerm = i[0] === 0 ? "" : `${formatFraction(i[0], i[1])}x`;
-        const kTerm = k[0] === 0 ? "" : `${k[0] < 0 ? "−" : "+"} ${formatFraction(Math.abs(k[0]), Math.abs(k[1]), false)}`;
-        rightExpression = `${ixTerm} ${kTerm}`.trim();
+        rightTerm = `${formatFraction(i[0], i[1])}x ${k[0] < 0 ? "" : "+"} ${formatFraction(k[0], k[1], false)}`;
       }
 
-      // Format the equation
-      const leftSide = `${formatFraction(a[0], a[1])}\\left(${leftExpression}\\right)`;
-      const rightSide = `${formatFraction(g[0], g[1])}\\left(${rightExpression}\\right)`;
+      if (g[0] !== g[1] && (i[0] === 0 || k[0] === 0)) {
+        const [num, den] = evaluateFraction(g[0], g[1], i[0] || k[0], i[0] ? i[1] : k[1]);
+        rightTerm = formatFraction(num, den);
+      } else if (g[0] === g[1]) {
+        rightTerm = `\\left(${rightTerm}\\right)`;
+      } else {
+        rightTerm = `${formatFraction(g[0], g[1])}\\left(${rightTerm}\\right)`;
+      }
 
-      return `${leftSide} = ${rightSide}`;
+      return `${leftTerm} = ${rightTerm}`;
     }
 
-    // Render the equation on the page
     function renderEquation() {
-      const equationContainer = document.getElementById("equation-container");
+      const container = document.getElementById("equation-container");
       const equation = generateEquation();
-      equationContainer.innerHTML = `\\[ ${equation} \\]`;
-      MathJax.typesetPromise(); // Re-render MathJax content
+      container.innerHTML = `\\[ ${equation} \\]`;
+      MathJax.typesetPromise();
     }
 
-    // Initial render
     window.onload = renderEquation;
   </script>
 </body>
