@@ -67,11 +67,16 @@
       return [numerator, denominator];
     }
 
-    // Format a fraction into LaTeX, handling negatives and special cases
+    // Format a fraction into LaTeX, handling negatives, simplifications, and denominators of 1
     function formatFraction(numerator, denominator, skipOne = true) {
       let sign = numerator * denominator < 0 ? "−" : ""; // Determine the sign
       numerator = Math.abs(numerator);
       denominator = Math.abs(denominator);
+
+      // Simplify fractions with denominator = 1
+      if (denominator === 1) {
+        return `${sign}${numerator}`;
+      }
 
       // Handle cases where the fraction simplifies to 1 or -1
       if (numerator === denominator) {
