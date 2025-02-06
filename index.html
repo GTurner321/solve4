@@ -93,20 +93,27 @@
 
 function generateEquation() {
   const [a, b] = getCoprimePair();
-  const [c, d] = [getRandomInteger(), getRandomInteger(false)];
-  const [e, f] = [getRandomInteger(), getRandomInteger(false)];
+  let [c, d] = [getRandomInteger(), getRandomInteger(false)];
+  let [e, f] = [getRandomInteger(), getRandomInteger(false)];
   const [g, h] = getCoprimePair();
   let [i, j] = [getRandomInteger(), getRandomInteger(false)];
-  const [k, l] = [getRandomInteger(), getRandomInteger(false)];
+  let [k, l] = [getRandomInteger(), getRandomInteger(false)];
+
+  // Simplify all internal fractions
+  [c, d] = simplifyFraction(c, d);
+  [e, f] = simplifyFraction(e, f);
+  [i, j] = simplifyFraction(i, j);
+  [k, l] = simplifyFraction(k, l);
 
   while (c * j === i * d) {
-    [i, j] = [getRandomInteger(), getRandomInteger(false)];
+    [i, j] = simplifyFraction(...[getRandomInteger(), getRandomInteger(false)]);
   }
 
   // Process left side
   let leftExpression = "";
   if (c === 0 && e === 0) {
-    leftExpression = "0";
+    const [numA, denA] = [a, b];
+    leftExpression = numA === 0 ? "0" : formatFraction(numA, denA) + "\\left(0\\right)";
   } else if (c === 0) {
     const [numE, denE] = multiplyFractions([a, b], [e, f]);
     leftExpression = formatFraction(numE, denE);
@@ -114,18 +121,18 @@ function generateEquation() {
     const [numC, denC] = multiplyFractions([a, b], [c, d]);
     leftExpression = `${formatFraction(numC, denC)}x`;
   } else {
-    const [numC, denC] = [c, d];
     const isEFNegative = (e * f) < 0;
     const fractionEF = formatFraction(Math.abs(e), Math.abs(f), false);
     const sign = isEFNegative ? "-" : "+";
-    const cTerm = `${formatFraction(numC, denC)}x`;
+    const cTerm = `${formatFraction(c, d)}x`;
     leftExpression = `${formatFraction(a, b)}\\left(${cTerm} ${sign} ${fractionEF}\\right)`;
   }
 
   // Process right side
   let rightExpression = "";
   if (i === 0 && k === 0) {
-    rightExpression = "0";
+    const [numG, denG] = [g, h];
+    rightExpression = numG === 0 ? "0" : formatFraction(numG, denG) + "\\left(0\\right)";
   } else if (i === 0) {
     const [numK, denK] = multiplyFractions([g, h], [k, l]);
     rightExpression = formatFraction(numK, denK);
@@ -133,16 +140,15 @@ function generateEquation() {
     const [numI, denI] = multiplyFractions([g, h], [i, j]);
     rightExpression = `${formatFraction(numI, denI)}x`;
   } else {
-    const [numI, denI] = [i, j];
     const isKLNegative = (k * l) < 0;
     const fractionKL = formatFraction(Math.abs(k), Math.abs(l), false);
     const sign = isKLNegative ? "-" : "+";
-    const iTerm = `${formatFraction(numI, denI)}x`;
+    const iTerm = `${formatFraction(i, j)}x`;
     rightExpression = `${formatFraction(g, h)}\\left(${iTerm} ${sign} ${fractionKL}\\right)`;
   }
 
   return `${leftExpression} = ${rightExpression}`;
-}
+} 
     
     function renderEquation() {
       const equationContainer = document.getElementById("equation-container");
