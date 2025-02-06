@@ -36,9 +36,13 @@
   <button class="generate-btn" onclick="renderEquation()">Generate New Equation</button>
 
   <script>
-    // Generate a random integer between -10 and 10 (including zero)
-    function getRandomInteger() {
-      return Math.floor(Math.random() * 21) - 10;
+    // Generate a random integer between -10 and 10 (inclusive for c, e, i, k)
+    function getRandomInteger(includeZero = true) {
+      let value;
+      do {
+        value = Math.floor(Math.random() * 21) - 10;
+      } while (!includeZero && value === 0); // Exclude zero if required
+      return value;
     }
 
     // Compute the GCD of two integers
@@ -50,10 +54,10 @@
     function getCoprimePair() {
       let numerator, denominator;
       do {
-        numerator = getRandomInteger();
-        denominator = getRandomInteger();
-      } while (gcd(numerator, denominator) !== 1 || denominator === 0);
-      
+        numerator = getRandomInteger(false); // Exclude zero for numerator
+        denominator = getRandomInteger(false); // Exclude zero for denominator
+      } while (gcd(numerator, denominator) !== 1);
+
       // Ensure the denominator is always positive
       if (denominator < 0) {
         numerator = -numerator;
@@ -89,22 +93,18 @@
       // Generate random fractions for left-hand side
       const a = getCoprimePair();
       const b = getCoprimePair();
-      const c = getCoprimePair();
+      const c = [getRandomInteger(), getRandomInteger(false)]; // Include zero for numerator only
       const d = getCoprimePair();
-      const e = getCoprimePair();
+      const e = [getRandomInteger(), getRandomInteger(false)]; // Include zero for numerator only
       const f = getCoprimePair();
 
       // Generate random fractions for right-hand side
       const g = getCoprimePair();
       const h = getCoprimePair();
-      const i = getCoprimePair();
+      const i = [getRandomInteger(), getRandomInteger(false)]; // Include zero for numerator only
       const j = getCoprimePair();
-      const k = getCoprimePair();
+      const k = [getRandomInteger(), getRandomInteger(false)]; // Include zero for numerator only
       const l = getCoprimePair();
-
-      // Check if the fraction before the bracket equals 1 (but not -1)
-      const isLeftBracketNeeded = !(a[0] === a[1] && a[0] > 0);
-      const isRightBracketNeeded = !(g[0] === g[1] && g[0] > 0);
 
       // Handle cases where c = 0 or e = 0 (left-hand side)
       let leftExpression = "";
@@ -127,13 +127,8 @@
       }
 
       // Format the equation
-      const leftSide = isLeftBracketNeeded
-        ? `${formatFraction(a[0], a[1])}\\left(${leftExpression}\\right)`
-        : `${leftExpression}`;
-
-      const rightSide = isRightBracketNeeded
-        ? `${formatFraction(g[0], g[1])}\\left(${rightExpression}\\right)`
-        : `${rightExpression}`;
+      const leftSide = `${formatFraction(a[0], a[1])}\\left(${leftExpression}\\right)`;
+      const rightSide = `${formatFraction(g[0], g[1])}\\left(${rightExpression}\\right)`;
 
       return `${leftSide} = ${rightSide}`;
     }
