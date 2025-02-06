@@ -125,7 +125,11 @@ function generateEquation() {
     const fractionEF = formatFraction(Math.abs(e), Math.abs(f), false);
     const sign = isEFNegative ? "-" : "+";
     const cTerm = `${formatFraction(c, d)}x`;
-    leftExpression = `${formatFraction(a, b)}\\left(${cTerm} ${sign} ${fractionEF}\\right)`;
+    // Only add brackets if a/b is not 1
+    leftExpression =
+      a === b
+        ? `${cTerm} ${sign} ${fractionEF}`
+        : `${formatFraction(a, b)}\\left(${cTerm} ${sign} ${fractionEF}\\right)`;
   }
 
   // Process right side
@@ -144,11 +148,15 @@ function generateEquation() {
     const fractionKL = formatFraction(Math.abs(k), Math.abs(l), false);
     const sign = isKLNegative ? "-" : "+";
     const iTerm = `${formatFraction(i, j)}x`;
-    rightExpression = `${formatFraction(g, h)}\\left(${iTerm} ${sign} ${fractionKL}\\right)`;
+    // Only add brackets if g/h is not 1
+    rightExpression =
+      g === h
+        ? `${iTerm} ${sign} ${fractionKL}`
+        : `${formatFraction(g, h)}\\left(${iTerm} ${sign} ${fractionKL}\\right)`;
   }
 
   return `${leftExpression} = ${rightExpression}`;
-} 
+}
     
     function renderEquation() {
       const equationContainer = document.getElementById("equation-container");
