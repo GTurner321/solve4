@@ -91,61 +91,63 @@
       return simplifyFraction(resultNum, resultDen);
     }
 
-    function generateEquation() {
-      // Generate initial fractions
-      const [a, b] = getCoprimePair();
-      const [c, d] = [getRandomInteger(), getRandomInteger(false)];
-      const [e, f] = [getRandomInteger(), getRandomInteger(false)];
-      const [g, h] = getCoprimePair();
-      let [i, j] = [getRandomInteger(), getRandomInteger(false)];
-      const [k, l] = [getRandomInteger(), getRandomInteger(false)];
+function generateEquation() {
+  // Generate initial fractions
+  const [a, b] = getCoprimePair();
+  const [c, d] = [getRandomInteger(), getRandomInteger(false)];
+  const [e, f] = [getRandomInteger(), getRandomInteger(false)];
+  const [g, h] = getCoprimePair();
+  let [i, j] = [getRandomInteger(), getRandomInteger(false)];
+  const [k, l] = [getRandomInteger(), getRandomInteger(false)];
 
-      // Ensure c/d ≠ i/j
-      while (c * j === i * d) {
-        [i, j] = [getRandomInteger(), getRandomInteger(false)];
-      }
+  // Ensure c/d ≠ i/j
+  while (c * j === i * d) {
+    [i, j] = [getRandomInteger(), getRandomInteger(false)];
+  }
 
-      // Process left side
-      let leftExpression = "";
-      if (c === 0 && e === 0) {
-        leftExpression = "0";
-      } else if (c === 0) {
-        // Only fraction term e/f
-        const [numE, denE] = multiplyFractions([a, b], [e, f]);
-        leftExpression = formatFraction(numE, denE);
-      } else if (e === 0) {
-        // Only x term c/d
-        const [numC, denC] = multiplyFractions([a, b], [c, d]);
-        leftExpression = `${formatFraction(numC, denC)}x`;
-      } else {
-        const cTerm = `${formatFraction(c, d)}x`;
-        const eTerm = e < 0 ? `- ${formatFraction(Math.abs(e), f, false)}` : 
-                             `+ ${formatFraction(e, f, false)}`;
-        leftExpression = `${formatFraction(a, b)}\\left(${cTerm} ${eTerm}\\right)`;
-      }
+  // Process left side
+  let leftExpression = "";
+  if (c === 0 && e === 0) {
+    leftExpression = "0";
+  } else if (c === 0) {
+    // Only fraction term e/f
+    const [numE, denE] = multiplyFractions([a, b], [e, f]);
+    leftExpression = formatFraction(numE, denE);
+  } else if (e === 0) {
+    // Only x term c/d
+    const [numC, denC] = multiplyFractions([a, b], [c, d]);
+    leftExpression = `${formatFraction(numC, denC)}x`;
+  } else {
+    const cTerm = `${formatFraction(c, d)}x`;
+    const eTerm = e < 0 ? 
+        (cTerm.startsWith('-') ? `+ ${formatFraction(Math.abs(e), f, false)}` : `- ${formatFraction(Math.abs(e), f, false)}`) : 
+        (cTerm.startsWith('-') ? `- ${formatFraction(e, f, false)}` : `+ ${formatFraction(e, f, false)}`);
+    leftExpression = `${formatFraction(a, b)}\\left(${cTerm} ${eTerm}\\right)`;
+  }
 
-      // Process right side
-      let rightExpression = "";
-      if (i === 0 && k === 0) {
-        rightExpression = "0";
-      } else if (i === 0) {
-        // Only fraction term k/l
-        const [numK, denK] = multiplyFractions([g, h], [k, l]);
-        rightExpression = formatFraction(numK, denK);
-      } else if (k === 0) {
-        // Only x term i/j
-        const [numI, denI] = multiplyFractions([g, h], [i, j]);
-        rightExpression = `${formatFraction(numI, denI)}x`;
-      } else {
-        const iTerm = `${formatFraction(i, j)}x`;
-        const kTerm = k < 0 ? `- ${formatFraction(Math.abs(k), l, false)}` : 
-                             `+ ${formatFraction(k, l, false)}`;
-        rightExpression = `${formatFraction(g, h)}\\left(${iTerm} ${kTerm}\\right)`;
-      }
+  // Process right side
+  let rightExpression = "";
+  if (i === 0 && k === 0) {
+    rightExpression = "0";
+  } else if (i === 0) {
+    // Only fraction term k/l
+    const [numK, denK] = multiplyFractions([g, h], [k, l]);
+    rightExpression = formatFraction(numK, denK);
+  } else if (k === 0) {
+    // Only x term i/j
+    const [numI, denI] = multiplyFractions([g, h], [i, j]);
+    rightExpression = `${formatFraction(numI, denI)}x`;
+  } else {
+    const iTerm = `${formatFraction(i, j)}x`;
+    const kTerm = k < 0 ? 
+        (iTerm.startsWith('-') ? `+ ${formatFraction(Math.abs(k), l, false)}` : `- ${formatFraction(Math.abs(k), l, false)}`) : 
+        (iTerm.startsWith('-') ? `- ${formatFraction(k, l, false)}` : `+ ${formatFraction(k, l, false)}`);
+    rightExpression = `${formatFraction(g, h)}\\left(${iTerm} ${kTerm}\\right)`;
+  }
 
-      return `${leftExpression} = ${rightExpression}`;
-    }
-
+  return `${leftExpression} = ${rightExpression}`;
+}
+    
     function renderEquation() {
       const equationContainer = document.getElementById("equation-container");
       const equation = generateEquation();
