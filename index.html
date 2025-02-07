@@ -58,7 +58,8 @@
   <button class="generate-btn" onclick="renderAllEquations()">Generate New Equations</button>
 
   <script>
-    // All previous JavaScript functions remain the same from prior version
+    let currentValues = {};
+
     function getRandomInteger(includeZero = true) {
       let value;
       do {
@@ -93,6 +94,23 @@
         denominator = -denominator;
       }
       return [numerator, denominator];
+    }
+
+    function generateBaseValues() {
+      let [a, b] = getRandomPair();
+      let [c, d] = getRandomPair();
+      let [e, f] = getRandomPair();
+      let [g, h] = getRandomPair();
+      let [i, j] = getRandomPair();
+      let [k, l] = getRandomPair();
+
+      // Ensure c/d ≠ i/j
+      while ((c * j) === (i * d)) {
+        [i, j] = getRandomPair();
+      }
+
+      currentValues = { a, b, c, d, e, f, g, h, i, j, k, l };
+      return currentValues;
     }
 
     function simplifyFraction(num, den) {
@@ -132,22 +150,21 @@
     }
 
     function generateEquation(version) {
-      let [a, b] = version === 1 ? getCoprimePair() : getRandomPair();
-      let [c, d] = getRandomPair();
-      let [e, f] = getRandomPair();
-      let [g, h] = version === 1 ? getCoprimePair() : getRandomPair();
-      let [i, j] = getRandomPair();
-      let [k, l] = getRandomPair();
+      let { a, b, c, d, e, f, g, h, i, j, k, l } = currentValues;
 
-      if (version === 2 || version === 1) {
-        if (version === 2) {
-          [a, b] = simplifyFraction(a, b);
-          [c, d] = simplifyFraction(c, d);
-          [e, f] = simplifyFraction(e, f);
-          [g, h] = simplifyFraction(g, h);
-          [i, j] = simplifyFraction(i, j);
-          [k, l] = simplifyFraction(k, l);
-        }
+      if (version === 1) {
+        let leftExpression = formatStandardForm(a, b, c, d, e, f);
+        let rightExpression = formatStandardForm(g, h, i, j, k, l);
+        return `${leftExpression} = ${rightExpression}`;
+      }
+
+      if (version === 2) {
+        [a, b] = simplifyFraction(a, b);
+        [c, d] = simplifyFraction(c, d);
+        [e, f] = simplifyFraction(e, f);
+        [g, h] = simplifyFraction(g, h);
+        [i, j] = simplifyFraction(i, j);
+        [k, l] = simplifyFraction(k, l);
 
         let leftExpression = formatStandardForm(a, b, c, d, e, f);
         let rightExpression = formatStandardForm(g, h, i, j, k, l);
@@ -229,6 +246,7 @@
     }
 
     function renderAllEquations() {
+      generateBaseValues();
       for (let i = 1; i <= 4; i++) {
         const container = document.getElementById(`equation-container${i}`);
         const equation = generateEquation(i);
